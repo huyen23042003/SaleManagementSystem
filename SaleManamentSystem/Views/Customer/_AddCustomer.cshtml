@@ -1,0 +1,57 @@
+﻿@model SaleManamentSystem.Models.CustomerEntity
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">THÊM MỚI KHÁCH HÀNG</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+@using (Html.BeginForm("AddCustomer", "Customer", FormMethod.Post, new { id = "addForm" }))
+{
+    <div class="modal-body">
+        <div class="mb-3">
+            <label class="fw-bold">Mã khách hàng</label>
+            @Html.TextBoxFor(m => m.CustomerID, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.CustomerID, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            <label class="fw-bold">Tên khách hàng</label>
+            @Html.TextBoxFor(m => m.CustomerName, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.CustomerName, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            <label class="fw-bold">Số điện thoại</label>
+            @Html.TextBoxFor(m => m.Phone, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" onclick="submitAddForm('Continue')" class="btn btn-info">Nhập tiếp</button>
+        <button type="button" onclick="submitAddForm('Save')" class="btn btn-primary">Lưu và Đóng</button>
+    </div>
+}
+
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
+<script>
+    function submitAddForm(actionType) {
+        var form = $('#addForm');
+
+        $.validator.unobtrusive.parse(form);
+
+        if (form.valid()) {
+            var formData = form.serialize() + "&submitButton=" + actionType;
+
+            $.post(form.attr('action'), formData, function (response) {
+                if (response.indexOf("window.location.reload()") !== -1) {
+                    location.reload();
+                } else {
+                    $('#modalBodyContent').html(response);
+                }
+            }).fail(function () {
+                alert("Lỗi khi gửi dữ liệu!");
+            });
+        }
+    } 
+</script>

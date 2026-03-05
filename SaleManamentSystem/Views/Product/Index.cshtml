@@ -1,0 +1,74 @@
+﻿@model IEnumerable<SaleManamentSystem.Models.ProductEntity>
+@{
+    ViewBag.Title = "DANH MỤC SẢN PHẨM";
+}
+
+<div class="container mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">@ViewBag.Title</h4>
+            <button class="btn btn-light btn-sm" onclick="openPopup('/Product/AddProduct')">
+                <b>+ Thêm mới</b>
+            </button>
+        </div>
+        <div class="card-body">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>@Html.DisplayNameFor(m => m.ProductID)</th>
+                        <th>@Html.DisplayNameFor(m => m.ProductName)</th>
+                        <th>@Html.DisplayNameFor(m => m.Price)</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.ProductID</td>
+                            <td>@item.ProductName</td>
+                            <td>@item.Price.ToString("N0")</td>
+                            <td class="text-center">
+                                <button class="btn btn-info btn-sm" onclick="openPopup('/Product/Details?productID=@item.ProductID')">Xem</button>
+                                <button class="btn btn-warning btn-sm" onclick="openPopup('/Product/EditProduct?productID=@item.ProductID')">Sửa</button>
+
+                                @using (Html.BeginForm("DeleteProduct", "Product", FormMethod.Post, new { @class = "d-inline" }))
+                                {
+                                    @Html.Hidden("productID", item.ProductID)
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Bạn có muốn xóa sản phẩm [@item.ProductName] không?');">
+                                        Xóa
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="actionModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" id="modalBodyContent">
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openPopup(url) {
+            $.get(url, function (data) {
+                $('#modalBodyContent').html(data);
+                $('#actionModal').modal('show');
+            });
+        }
+    </script>
+}
