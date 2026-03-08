@@ -316,6 +316,9 @@
     <Content Include="Views\Product\_Details.cshtml" />
     <Content Include="Views\Customer\_Details.cshtml" />
     <Content Include="Views\Invoice\Index.cshtml" />
+    <Content Include="Views\Invoice\_Details.cshtml" />
+    <Content Include="Views\Invoice\_AddInvoice.cshtml" />
+    <Content Include="Views\Invoice\_EditInvoice.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

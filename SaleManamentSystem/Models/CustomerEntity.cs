@@ -23,6 +23,7 @@ namespace SaleManamentSystem.Models
         [DisplayName("Số điện thoại")]
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         [RegularExpression(@"^[0-9]*$", ErrorMessage = "Số điện thoại chỉ được nhập số")]
+        [StringLength(10, MinimumLength =(9), ErrorMessage= "Số điện thoại tối thiểu ")]
         public string Phone { get; set; }
     }
 }

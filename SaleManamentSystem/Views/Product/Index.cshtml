@@ -63,12 +63,52 @@
 </div>
 
 @section Scripts {
+
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
     <script>
         function openPopup(url) {
             $.get(url, function (data) {
                 $('#modalBodyContent').html(data);
                 $('#actionModal').modal('show');
             });
+        }
+
+        function submitAddForm(actionType) {
+            var form = $('#addForm');
+
+            if (form.length === 0) return;
+
+            if ($.validator && $.validator.unobtrusive) {
+                form.removeData("validator").removeData("unobtrusiveValidation");
+                $.validator.unobtrusive.parse(form);
+            }
+
+            if (form.valid()) {
+                var formData = form.serialize() + "&submitButton=" + actionType;
+
+                $.ajax({
+                    url: '/Product/AddProduct',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.indexOf("window.location.reload()") !== -1) {
+                            location.reload();
+                        } else {
+                            $('#modalBodyContent').html(response);
+
+                            var newForm = $('#addForm');
+                            if ($.validator && $.validator.unobtrusive) {
+                                $.validator.unobtrusive.parse(newForm);
+                            }
+                            console.log("Đã reset form thành công.");
+                        }
+                    },
+                    error: function () {
+                        alert("Lỗi kết nối Server!");
+                    }
+                });
+            }
         }
     </script>
 }

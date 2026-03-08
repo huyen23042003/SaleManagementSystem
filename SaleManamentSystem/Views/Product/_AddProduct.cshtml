@@ -5,13 +5,14 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 
-@using (Html.BeginForm("AddProduct", "Product", FormMethod.Post, new { id = "addForm" }))
+@using (Html.BeginForm("AddProduct", "Product", FormMethod.Post, new { id = "addForm", onsubmit = "return false;" }))
 {
     <div class="modal-body">
         <div class="mb-3">
-            <label class="fw-bold">Mã sản phẩm (Bắt buộc, không khoảng trắng)</label>
-            @Html.TextBoxFor(m => m.ProductID, new { @class = "form-control", placeholder = "VD: SP001" })
-            @Html.ValidationMessageFor(m => m.ProductID, "", new { @class = "text-danger" })
+            <label class="fw-bold">Mã sản phẩm</label>
+            @Html.TextBoxFor(m => m.ProductID, new { @class = "form-control",id = "ProductID", placeholder = "VD: SP001" })
+            <span class="text-danger small fw-bold" style="display:none;"></span>
+            @Html.ValidationMessageFor(m => m.ProductID, "", new { @class = "text-danger small" })
         </div>
 
         <div class="mb-3">
@@ -36,27 +37,39 @@
 }
 
 
-<script src="~/Scripts/jquery.validate.min.js"></script>
-<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
 
 <script>
-    function submitAddForm(actionType) {
-        var form = $('#addForm');
+    (function () {
+        $(document).on('input', '#ProductID', function () {
+            var val = $(this).val().replace(/\s/g, '').toUpperCase();
+            $(this).val(val);
+        });
 
-        $.validator.unobtrusive.parse(form);
+        $(document).on('blur', '#ProductID', function () {
+            var productID = $(this).val().trim();
+            var $input = $(this);
+            var $errorSpan = $input.nextAll('.text-danger').first();
 
-        if (form.valid()) {
-            var formData = form.serialize() + "&submitButton=" + actionType;
+            if (productID === "") return;
 
-            $.post(form.attr('action'), formData, function (response) {
-                if (response.indexOf("window.location.reload()") !== -1) {
-                    location.reload();
+            $.get('/Product/CheckExistingProduct', { productID: productID }, function (exists) {
+                if (exists) {
+                    $input.addClass('is-invalid');
+                    $errorSpan.text("Mã sản phẩm này đã tồn tại!").show();
+                    $('.btn-primary, .btn-info').prop('disabled', true);
                 } else {
-                    $('#modalBodyContent').html(response);
+                    $input.removeClass('is-invalid').addClass('is-valid');
+                    $errorSpan.text("").hide();
+                    $('.btn-primary, .btn-info').prop('disabled', false);
                 }
-            }).fail(function () {
-                alert("Lỗi khi gửi dữ liệu!");
             });
-        }
-    }
+        });
+        $(document).ready(function () {
+            $('#actionModal').on('hidden.bs.modal', function () {
+                location.reload();
+            });
+        });
+    })(); 
+
+    
 </script>

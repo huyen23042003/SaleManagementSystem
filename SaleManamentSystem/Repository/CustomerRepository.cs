@@ -79,7 +79,7 @@ namespace SaleManamentSystem.Repository
         {
             using (SqlConnection conn = new SqlConnection(_connStr))
             {
-                string sql = "UPDATE Customers SET CustomerName = @Name, Phone = @Phone WHERE CustomerID = @ID";
+                string sql = "UPDATE CUSTOMERS SET CustomerName = @Name, Phone = @Phone WHERE CustomerID = @ID";
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@ID", Customer.CustomerID);
                 cmd.Parameters.AddWithValue("@Name", Customer.CustomerName.Trim());

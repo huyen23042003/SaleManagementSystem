@@ -44,7 +44,7 @@
                                     @Html.Hidden("invoiceID", item.InvoiceID)
                                     <button type="submit"
                                             class="btn btn-outline-danger btn-sm"
-                                            onclick="return confirm('Bạn có muốn xóa hóa đơn [@item.CustomerID] không?');">
+                                            onclick="return confirm('Bạn có muốn xóa hóa đơn [@item.InvoiceID] không?');">
                                         Xóa
                                     </button>
                                 }
@@ -65,12 +65,70 @@
 </div>
 
 @section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
     <script>
+        var isAdded = false;
+
         function openPopup(url) {
+            isAdded = false;
             $.get(url, function (data) {
                 $('#modalBodyContent').html(data);
                 $('#actionModal').modal('show');
             });
         }
+
+        function submitInvoice(action) {
+            var form = $('#invoiceForm');
+
+            if ($("#InvoiceID").val().trim() === "" || $("#CustomerID").val() === "") {
+                alert("Vui lòng nhập đầy đủ Mã hóa đơn và Khách hàng!");
+                return false;
+            }
+            if ($("#detailTable tbody tr").length === 0) {
+                alert("Hóa đơn chưa có sản phẩm!");
+                return false;
+            }
+
+            $("#detailTable tbody tr").each(function (i, tr) {
+                $(tr).find('select, input').each(function () {
+                    var name = $(this).attr('name');
+                    if (name) {
+                        var newName = name.replace(/\[\d+\]/, '[' + i + ']');
+                        $(this).attr('name', newName);
+                    }
+                });
+            });
+
+            var formData = form.serialize() + "&submitButton=" + action;
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function (res) {
+                    if (res.indexOf("window.location.reload()") > -1) {
+                        location.reload();
+                    } else {
+                        $('#modalBodyContent').html(res);
+                        isAdded = true; 
+                        $('.modal-body').animate({ scrollTop: 0 }, 'fast');
+                    }
+                },
+                error: function (xhr) {
+                    alert("Có lỗi xảy ra (Lỗi 500 hoặc kết nối).");
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            $('#actionModal').on('hidden.bs.modal', function () {
+                if (isAdded) {
+                    location.reload();
+                }
+            });
+        });
     </script>
 }
+
+

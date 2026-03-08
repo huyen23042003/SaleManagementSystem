@@ -2,6 +2,7 @@
 using SaleManamentSystem.Models;
 using SaleManamentSystem.Repository;
 using System.Collections.Generic;
+using System;
 
 namespace SaleManamentSystem.Controllers
 {
@@ -35,8 +36,11 @@ namespace SaleManamentSystem.Controllers
                 if (_productRepository.GetProductByID(product.ProductID) != null)
                 {
                     ModelState.AddModelError("ProductID", "Mã sản phẩm này đã tồn tại!");
+                    TempData["Error"] = "Mã sản phẩm này đã tồn tại!";
+
                     return PartialView("_AddProduct", product);
                 }
+                Console.WriteLine(product.ProductID);
 
                 bool isSaved = _productRepository.AddNewProduct(product);
 
@@ -91,6 +95,17 @@ namespace SaleManamentSystem.Controllers
                 TempData["Error"] = "Sản phẩm đã có trong hóa đơn, không thể xóa!";
             }
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public JsonResult CheckExistingProduct(string productID)
+        {
+            if (string.IsNullOrEmpty(productID)) return Json(false, JsonRequestBehavior.AllowGet);
+
+            productID = productID.Trim().ToUpper();
+            bool exists = _productRepository.GetProductByID(productID) != null;
+
+            return Json(exists, JsonRequestBehavior.AllowGet);
         }
     }
 }

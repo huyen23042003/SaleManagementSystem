@@ -1,0 +1,112 @@
+﻿@model SaleManamentSystem.Models.InvoiceEntity
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title fw-bold">LẬP HÓA ĐƠN MỚI</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+@using (Html.BeginForm("AddInvoice", "Invoice", FormMethod.Post, new { id = "invoiceForm", onsubmit = "return false;" }))
+{
+    <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="fw-bold">Mã hóa đơn</label>
+                @Html.TextBoxFor(m => m.InvoiceID, new { @class = "form-control", id = "InvoiceID", placeholder = "HD001..." })
+                @Html.ValidationMessageFor(m => m.InvoiceID, "", new { @class = "text-danger small fw-bold" })
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="fw-bold">Khách hàng</label>
+                <input list="customerList" name="CustomerID" id="CustomerID" class="form-select" placeholder="Nhập mã hoặc chọn khách hàng..." autocomplete="off">
+                <datalist id="customerList">
+                    @foreach (var item in (IEnumerable<SelectListItem>)ViewBag.Customers)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </datalist>
+                @Html.ValidationMessageFor(m => m.CustomerID, "", new { @class = "text-danger small fw-bold" })
+            </div>
+        </div>
+
+        <hr />
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0">CHI TIẾT MẶT HÀNG</h6>
+            <button type="button" class="btn btn-sm btn-success" onclick="addNewRow()">+ Thêm dòng</button>
+        </div>
+
+        <table class="table table-bordered table-sm" id="detailTable">
+            <thead class="table-light text-center">
+                <tr>
+                    <th style="width: 40%">Sản phẩm</th>
+                    <th style="width: 20%">Đơn giá</th>
+                    <th style="width: 15%">SL</th>
+                    <th style="width: 20%">Thành tiền</th>
+                    <th style="width: 5%"></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <div class="text-end mt-3 border-top pt-2">
+            <span class="fw-bold me-2">TỔNG CỘNG:</span>
+            <span id="spanTotal" class="text-danger fw-bold h5">0</span>
+            @Html.HiddenFor(m => m.TotalPrice, new { id = "hdTotalPrice" })
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        @* THAY ĐỔI 2: Dùng type="button" và gọi hàm qua onclick kèm return false *@
+        <button type="button" onclick="submitInvoice('Continue'); return false;" class="btn btn-info text-white">Nhập tiếp</button>
+        <button type="button" onclick="submitInvoice('Save'); return false;" class="btn btn-primary">Lưu hóa đơn</button>
+    </div>
+}
+
+<script>
+  
+    (function () {
+        var productData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Products));
+
+        window.addNewRow = function () {
+            var index = $("#detailTable tbody tr").length;
+            var options = '<option value="">-- Chọn sản phẩm --</option>';
+            if (productData) {
+                productData.forEach(p => options += `<option value="${p.ProductID}" data-price="${p.Price}">${p.ProductName}</option>`);
+            }
+
+            var row = `<tr>
+                <td><select name="InvoiceDetails[${index}].ProductID" class="form-select form-select-sm" onchange="updateRowPrice(this)">${options}</select></td>
+                <td><input type="text" class="form-control form-control-sm unit-price text-end" readonly value="0" /></td>
+                <td><input type="number" name="InvoiceDetails[${index}].Quantity" class="form-control form-control-sm qty-input text-center" value="1" min="1" oninput="calcTotal()" /></td>
+                <td class="text-end fw-bold"><span class="row-total-text">0</span><input type="hidden" name="InvoiceDetails[${index}].TotalPrice" class="row-total-value" value="0" /></td>
+                <td class="text-center"><button type="button" class="btn btn-link text-danger p-0" onclick="$(this).closest('tr').remove(); calcTotal();">X</button></td>
+            </tr>`;
+            $("#detailTable tbody").append(row);
+        };
+
+        window.updateRowPrice = function (select) {
+            var price = $(select).find(':selected').data('price') || 0;
+            var row = $(select).closest('tr');
+            row.find('.unit-price').val(new Intl.NumberFormat().format(price)).data('raw', price);
+            window.calcTotal();
+        };
+
+        window.calcTotal = function () {
+            var grandTotal = 0;
+            $("#detailTable tbody tr").each(function () {
+                var price = parseFloat($(this).find('.unit-price').data('raw')) || 0;
+                var qty = parseInt($(this).find('.qty-input').val()) || 0;
+                var total = price * qty;
+                $(this).find('.row-total-text').text(new Intl.NumberFormat().format(total));
+                $(this).find('.row-total-value').val(total);
+                grandTotal += total;
+            });
+            $("#spanTotal").text(new Intl.NumberFormat().format(grandTotal));
+            $("#hdTotalPrice").val(grandTotal);
+        };
+
+        $(document).ready(function () {
+            if ($("#detailTable tbody tr").length === 0) window.addNewRow();
+        });
+    })();
+</script>

@@ -41,7 +41,7 @@ namespace SaleManamentSystem.Repository
             {
                 string sql = "SELECT ProductID, ProductName, Price FROM Products WHERE ProductID = @ID";
                 SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@ID", productID);
+                cmd.Parameters.AddWithValue("@ID", productID.ToUpper());
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -98,7 +98,8 @@ namespace SaleManamentSystem.Repository
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@ID", productID);
                 conn.Open();
-                return (int)cmd.ExecuteScalar() > 0;
+                int i = Convert.ToInt16(cmd.ExecuteScalar());
+                return i > 0;
             }
         }
 
@@ -113,5 +114,19 @@ namespace SaleManamentSystem.Repository
                 return cmd.ExecuteNonQuery() > 0;
             }
         }
+
+        //public bool IsProductExist(string productID)
+        //{
+        //    using (SqlConnection conn = new SqlConnection(_connStr))
+        //    {
+        //        string sql = "SELECT COUNT(1) FROM PRODUCTS WHERE ProductID = @ProductID";
+        //        SqlCommand cmd = new SqlCommand(sql, conn);
+        //        cmd.Parameters.AddWithValue("@ProductID", productID);
+        //        conn.Open();
+        //        int i = Convert.ToInt16(cmd.ExecuteScalar());
+        //        return i > 0;
+
+        //    }
+        //}
     }
 }

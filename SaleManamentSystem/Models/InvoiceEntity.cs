@@ -12,6 +12,8 @@ namespace SaleManamentSystem.Models
         public string InvoiceID { get; set; }
 
         [Required(ErrorMessage = "Bắt buộc chọn khách hàng")]
+        [RegularExpression(@"^\S*$", ErrorMessage = "Mã hóa đơn không được chứa khoảng trắng")]
+
         [DisplayName("Mã khách hàng")]
 
         public string CustomerID { get; set; }
@@ -29,5 +31,10 @@ namespace SaleManamentSystem.Models
         public decimal TotalPrice { get; set; }
 
         public List<InvoiceDetailEntity> InvoiceDetails { get; set; } = new List<InvoiceDetailEntity>();
+
+        public InvoiceEntity()
+        {
+            InvoiceDetails = new List<InvoiceDetailEntity>();
+        }
     }
 }

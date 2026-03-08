@@ -34,6 +34,8 @@ namespace SaleManamentSystem.Controllers
                 if (_customerRepository.GetCustomerByID(customer.CustomerID) != null)
                 {
                     ModelState.AddModelError("CustomerID", "Mã khách hàng này đã tồn tại!");
+                    TempData["Error"] =  "Mã khách hàng này đã tồn tại!";
+
                     return PartialView("_AddCustomer", customer);
                 }
 
@@ -89,5 +91,17 @@ namespace SaleManamentSystem.Controllers
             }
             return RedirectToAction("Index");
         }
+        [HttpGet]
+        public JsonResult CheckExistingCustomer(string customerID)
+        {
+            if (string.IsNullOrEmpty(customerID))
+            {
+                return Json(false,JsonRequestBehavior.AllowGet);
+            }
+            customerID = customerID.Trim().ToUpper();
+            bool exists = _customerRepository.GetCustomerByID(customerID) != null;
+            return Json(exists, JsonRequestBehavior.AllowGet);
+        }
+      
     }
 }

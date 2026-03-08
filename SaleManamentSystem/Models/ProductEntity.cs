@@ -11,7 +11,7 @@ namespace SaleManamentSystem.Models
     {
         [Key]
         [DisplayName("Mã sản phẩm")]
-        [RegularExpression(@"^\S*$", ErrorMessage = "Mã khách hàng không được chứa khoảng trắng")]
+        [RegularExpression(@"^\S*$", ErrorMessage = "Mã sản phẩm không được chứa khoảng trắng")]
         [Required(ErrorMessage ="Bắt buộc nhập mã sản phẩm")]
         public string ProductID { get; set; }
 
@@ -22,9 +22,7 @@ namespace SaleManamentSystem.Models
 
         [DisplayName("Giá sản phẩm")]
         [Required(ErrorMessage = "Vui lòng nhập giá sản phẩm")]
-        [RegularExpression(@"^[0-9]*$", ErrorMessage = "Chỉ được nhập số")]
-
-
+        [Range(0, double.MaxValue, ErrorMessage = "Giá sản phẩm phải lớn hơn hoặc bằng 0")]
         public decimal Price { get; set; }
 
 

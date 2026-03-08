@@ -5,53 +5,75 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 
-@using (Html.BeginForm("AddCustomer", "Customer", FormMethod.Post, new { id = "addForm" }))
+@using (Html.BeginForm("AddCustomer", "Customer", FormMethod.Post, new { id = "addForm", onsubmit = "return false;" }))
 {
     <div class="modal-body">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger p-2 small">@TempData["Error"]</div>
+        }
+
         <div class="mb-3">
             <label class="fw-bold">Mã khách hàng</label>
-            @Html.TextBoxFor(m => m.CustomerID, new { @class = "form-control" })
-            @Html.ValidationMessageFor(m => m.CustomerID, "", new { @class = "text-danger" })
+            @* QUAN TRỌNG: Thêm id = "CustomerID" *@
+            @Html.TextBoxFor(m => m.CustomerID, new { @class = "form-control", id = "CustomerID", placeholder = "Ví dụ: KH001" })
+            @Html.ValidationMessageFor(m => m.CustomerID, "", new { @class = "text-danger small fw-bold" })
         </div>
         <div class="mb-3">
             <label class="fw-bold">Tên khách hàng</label>
             @Html.TextBoxFor(m => m.CustomerName, new { @class = "form-control" })
-            @Html.ValidationMessageFor(m => m.CustomerName, "", new { @class = "text-danger" })
+            @Html.ValidationMessageFor(m => m.CustomerName, "", new { @class = "text-danger small" })
         </div>
         <div class="mb-3">
             <label class="fw-bold">Số điện thoại</label>
             @Html.TextBoxFor(m => m.Phone, new { @class = "form-control" })
-            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger small" })
         </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-        <button type="button" onclick="submitAddForm('Continue')" class="btn btn-info">Nhập tiếp</button>
+        <button type="button" onclick="submitAddForm('Continue')" class="btn btn-info text-white">Nhập tiếp</button>
         <button type="button" onclick="submitAddForm('Save')" class="btn btn-primary">Lưu và Đóng</button>
     </div>
 }
 
-<script src="~/Scripts/jquery.validate.min.js"></script>
-<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
 
 <script>
-    function submitAddForm(actionType) {
-        var form = $('#addForm');
+    $(document).ready(function () {
+        $(document).on('input', '#CustomerID', function () {
+            var val = $(this).val().replace(/\s/g, '').toUpperCase();
+            $(this).val(val);
+        });
 
-        $.validator.unobtrusive.parse(form);
+        $(document).on('blur', '#CustomerID', function () {
+            var customerID = $(this).val().trim();
+            var $input = $(this);
+            var $errorSpan = $input.nextAll('.field-validation-valid, .field-validation-error').first();
 
-        if (form.valid()) {
-            var formData = form.serialize() + "&submitButton=" + actionType;
+            if (customerID === "") return;
 
-            $.post(form.attr('action'), formData, function (response) {
-                if (response.indexOf("window.location.reload()") !== -1) {
-                    location.reload();
+            $.get('/Customer/CheckExistingCustomer', { customerID: customerID }, function (exists) {
+                if (exists) {
+                    $input.addClass('is-invalid');
+                    $errorSpan.text("Mã khách hàng này đã tồn tại!").addClass('text-danger').show();
+                    $('.btn-primary, .btn-info').prop('disabled', true);
                 } else {
-                    $('#modalBodyContent').html(response);
+                    $input.removeClass('is-invalid').addClass('is-valid');
+                    $errorSpan.text("").hide();
+                    $('.btn-primary, .btn-info').prop('disabled', false);
                 }
-            }).fail(function () {
-                alert("Lỗi khi gửi dữ liệu!");
             });
-        }
-    } 
+        });
+
+
+    });
+
+
+    $(document).ready(function () {
+        $('#actionModal').on('hidden.bs.modal', function () {
+            location.reload();
+        });
+    });
+
 </script>
