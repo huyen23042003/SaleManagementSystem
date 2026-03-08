@@ -1,5 +1,18 @@
 ﻿@model SaleManamentSystem.Models.InvoiceEntity
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        height: 38px !important;
+        padding: 5px;
+        border: 1px solid #dee2e6;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
 <div class="modal-header bg-primary text-white">
     <h5 class="modal-title fw-bold">LẬP HÓA ĐƠN MỚI</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -16,13 +29,9 @@
             </div>
             <div class="col-md-6 mb-3">
                 <label class="fw-bold">Khách hàng</label>
-                <input list="customerList" name="CustomerID" id="CustomerID" class="form-select" placeholder="Nhập mã hoặc chọn khách hàng..." autocomplete="off">
-                <datalist id="customerList">
-                    @foreach (var item in (IEnumerable<SelectListItem>)ViewBag.Customers)
-                    {
-                        <option value="@item.Value">@item.Text</option>
-                    }
-                </datalist>
+                @Html.DropDownListFor(m => m.CustomerID, (IEnumerable<SelectListItem>)ViewBag.Customers,
+                    "Vui lòng nhập mã khách hàng",
+                    new { @class = "form-select select2-customer", id = "CustomerID" })
                 @Html.ValidationMessageFor(m => m.CustomerID, "", new { @class = "text-danger small fw-bold" })
             </div>
         </div>
@@ -56,31 +65,75 @@
 
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-
         <button type="button" onclick="submitInvoice('Continue'); return false;" class="btn btn-info text-white">Nhập tiếp</button>
         <button type="button" onclick="submitInvoice('Save'); return false;" class="btn btn-primary">Lưu hóa đơn</button>
     </div>
 }
 
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-  
     (function () {
         var productData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Products));
 
+        function initSelect2() {
+            $('.select2-customer').select2({
+                dropdownParent: $('#invoiceForm').parent(),
+                placeholder: "-- Vui lòng nhập mã khách hàng --",
+                allowClear: true,
+                minimumInputLength: 1,
+                language: {
+                    inputTooShort: function () {
+                        return "Vui lòng nhập mã khách hàng...";
+                    },
+                    noResults: function () {
+                        return "Không tìm thấy khách hàng nào!";
+                    },
+                    searching: function () {
+                        return "Đang tìm kiếm...";
+                    }
+                }
+            });
+        }
+
         window.addNewRow = function () {
             var index = $("#detailTable tbody tr").length;
-            var options = '<option value="">-- Chọn sản phẩm --</option>';
-            if (productData) {
-                productData.forEach(p => options += `<option value="${p.ProductID}" data-price="${p.Price}">${p.ProductName}</option>`);
-            }
+            var options = `<option value="">-- Chọn sản phẩm --</option>`;
+            productData.forEach(function (p) {
+                options += `<option value="${p.ProductID}" data-price="${p.Price}">${p.ProductName}</option>`;
+            });
 
-            var row = `<tr>
-                <td><select name="InvoiceDetails[${index}].ProductID" class="form-select form-select-sm" onchange="updateRowPrice(this)">${options}</select></td>
-                <td><input type="text" class="form-control form-control-sm unit-price text-end" readonly value="0" /></td>
-                <td><input type="number" name="InvoiceDetails[${index}].Quantity" class="form-control form-control-sm qty-input text-center" value="1" min="1" oninput="calcTotal()" /></td>
-                <td class="text-end fw-bold"><span class="row-total-text">0</span><input type="hidden" name="InvoiceDetails[${index}].TotalPrice" class="row-total-value" value="0" /></td>
-                <td class="text-center"><button type="button" class="btn btn-link text-danger p-0" onclick="$(this).closest('tr').remove(); calcTotal();">X</button></td>
+            var row =
+             `<tr>
+                <td style="width: 40%">
+                    <select name="InvoiceDetails[${index}].ProductID"
+                            class="form-select form-select-sm prod-select"
+                            onchange="updateRowPrice(this)">
+                        ${options}
+                    </select>
+                </td>
+                <td style="width: 20%">
+                    <input type="text" class="form-control form-control-sm unit-price text-end"
+                           readonly value="0" />
+                </td>
+                <td style="width: 15%">
+                    <input type="number" name="InvoiceDetails[${index}].Quantity"
+                           class="form-control form-control-sm qty-input text-center"
+                           value="1" min="1" oninput="calcTotal()" />
+                </td>
+                <td style="width: 20%" class="text-end fw-bold">
+                    <span class="row-total-text">0</span>
+                    <input type="hidden" name="InvoiceDetails[${index}].TotalPrice"
+                           class="row-total-value" value="0" />
+                </td>
+                <td style="width: 5%" class="text-center">
+                    <button type="button" class="btn btn-link text-danger p-0"
+                            onclick="removeRow(this)">
+                        <i class="bi bi-trash"></i> X
+                    </button>
+                </td>
             </tr>`;
+
             $("#detailTable tbody").append(row);
         };
 
@@ -91,6 +144,19 @@
             window.calcTotal();
         };
 
+        window.removeRow = function (btn) {
+            var rowCount = $("#detailTable tbody tr").length;
+
+            if (rowCount <= 1) {
+                alert("Hóa đơn phải có ít nhất 1 sản phẩm!");
+                return;
+            }
+
+             $(btn).closest('tr').remove();
+
+             window.calcTotal();
+            
+        };
         window.calcTotal = function () {
             var grandTotal = 0;
             $("#detailTable tbody tr").each(function () {
@@ -106,7 +172,28 @@
         };
 
         $(document).ready(function () {
+            initSelect2();
             if ($("#detailTable tbody tr").length === 0) window.addNewRow();
+
+            $(document).on('blur', '#InvoiceID', function () {
+                var invoiceID = $(this).val().trim();
+                var $input = $(this);
+                var $errorSpan = $input.nextAll('.field-validation-valid, .field-validation-error').first();
+
+                if (invoiceID === "") return;
+
+                $.get('/Invoice/CheckExistingInvoice', { invoiceID: invoiceID }, function (exists) {
+                    if (exists) {
+                        $input.addClass('is-invalid');
+                        $errorSpan.text("Mã hóa đơn này đã tồn tại!").addClass('text-danger').show();
+                        $('.btn-primary, .btn-info').prop('disabled', true);
+                    } else {
+                        $input.removeClass('is-invalid').addClass('is-valid');
+                        $errorSpan.text("").hide();
+                        $('.btn-primary, .btn-info').prop('disabled', false);
+                    }
+                });
+            });
         });
     })();
 </script>

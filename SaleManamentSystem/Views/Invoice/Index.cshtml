@@ -85,12 +85,23 @@
                 alert("Vui lòng nhập đầy đủ Mã hóa đơn và Khách hàng!");
                 return false;
             }
-            if ($("#detailTable tbody tr").length === 0) {
+
+            var rows = $("#detailTable tbody tr");
+            if (rows.length === 0) {
                 alert("Hóa đơn chưa có sản phẩm!");
                 return false;
             }
 
-            $("#detailTable tbody tr").each(function (i, tr) {
+            var isValidProducts = true;
+            rows.each(function (i, tr) {
+                var productId = $(tr).find('.prod-select').val();
+                if (!productId || productId === "") {
+                    alert("Dòng số " + (i + 1) + " chưa chọn sản phẩm. Vui lòng kiểm tra lại!");
+                    $(tr).find('.prod-select').focus(); 
+                    isValidProducts = false;
+                    return false; 
+                }
+
                 $(tr).find('select, input').each(function () {
                     var name = $(this).attr('name');
                     if (name) {
@@ -99,6 +110,8 @@
                     }
                 });
             });
+
+            if (!isValidProducts) return false; 
 
             var formData = form.serialize() + "&submitButton=" + action;
             $.ajax({
@@ -110,17 +123,15 @@
                         location.reload();
                     } else {
                         $('#modalBodyContent').html(res);
-                        isAdded = true; 
+                        isAdded = true;
                         $('.modal-body').animate({ scrollTop: 0 }, 'fast');
                     }
                 },
                 error: function (xhr) {
                     alert("Có lỗi xảy ra (Lỗi 500 hoặc kết nối).");
-                    console.error(xhr.responseText);
                 }
             });
         }
-
         $(document).ready(function () {
             $('#actionModal').on('hidden.bs.modal', function () {
                 if (isAdded) {

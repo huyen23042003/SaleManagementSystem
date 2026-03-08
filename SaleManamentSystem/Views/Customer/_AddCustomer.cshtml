@@ -15,7 +15,6 @@
 
         <div class="mb-3">
             <label class="fw-bold">Mã khách hàng</label>
-            @* QUAN TRỌNG: Thêm id = "CustomerID" *@
             @Html.TextBoxFor(m => m.CustomerID, new { @class = "form-control", id = "CustomerID", placeholder = "Ví dụ: KH001" })
             @Html.ValidationMessageFor(m => m.CustomerID, "", new { @class = "text-danger small fw-bold" })
         </div>

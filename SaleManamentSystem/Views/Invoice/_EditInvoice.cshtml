@@ -1,4 +1,18 @@
 ﻿@model SaleManamentSystem.Models.InvoiceEntity
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        height: 38px !important;
+        padding: 5px;
+        border: 1px solid #dee2e6;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">@TempData["Error"]</div>
@@ -15,13 +29,25 @@
         @Html.HiddenFor(m => m.InvoiceDate)
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="fw-bold">Khách hàng</label>
-                @Html.DropDownListFor(m => m.CustomerID, (IEnumerable<SelectListItem>)ViewBag.Customers, new { @class = "form-select", id = "editCustomerID" })
+                <label class="fw-bold">Mã hóa đơn</label>
+                <input type="text" class="form-control bg-light"
+                       value="@Model.InvoiceID"
+                       readonly
+                       style="cursor: not-allowed;"
+                       title="Không thể sửa mã hóa đơn" />
+
+                @Html.HiddenFor(m => m.InvoiceID)
             </div>
             <div class="col-md-6 mb-3 text-end">
                 <label class="fw-bold d-block">Ngày lập</label>
                 <span class="badge bg-light text-dark border">@Model.InvoiceDate.ToString("dd/MM/yyyy")</span>
             </div>
+            <div class="col-md-6 mb-3">
+                <label class="fw-bold">Khách hàng</label>
+                @Html.DropDownListFor(m => m.CustomerID, (IEnumerable<SelectListItem>)ViewBag.Customers,
+                    new { @class = "form-select select2-customer-edit", id = "editCustomerID" })
+            </div>
+
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -84,12 +110,32 @@
     </div>
 }
 
+@* 3. Nhúng JS Select2 *@
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     (function initEditScript() {
-        if (window.jQuery) {
+        if (window.jQuery && $.fn.select2) {
             var productData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Products));
 
-            // 1. Hàm thêm dòng mới
+            $('.select2-customer-edit').select2({
+                dropdownParent: $('#editInvoiceForm').parent(),
+                placeholder: "-- Chọn khách hàng --",
+                allowClear: true,
+                minimumInputLength: 1,
+                language: {
+                    inputTooShort: function () {
+                        return "Vui lòng nhập mã khách hàng...";
+                    },
+                    noResults: function () {
+                        return "Không tìm thấy khách hàng!";
+                    },
+                    searching: function () {
+                        return "Đang tìm...";
+                    }
+                }
+            });
+
             window.addNewRowEdit = function() {
                 var index = $("#editDetailTable tbody tr").length;
                 var options = `<option value="">-- Chọn --</option>`;
@@ -117,18 +163,13 @@
                 $("#editDetailTable tbody").append(row);
             };
 
-            // 2. Hàm XÓA DÒNG (Đã thêm logic chặn dòng cuối)
             window.removeRow = function (btn) {
                 var rowCount = $("#editDetailTable tbody tr").length;
-
                 if (rowCount <= 1) {
                     alert("Hóa đơn phải có ít nhất 1 mặt hàng!");
                     return;
                 }
-
                 $(btn).closest('tr').remove();
-
-                // Đánh lại số thứ tự index để gửi form chính xác
                 $("#editDetailTable tbody tr").each(function (index, tr) {
                     $(tr).find('select, input').each(function () {
                         var name = $(this).attr('name');
@@ -141,7 +182,6 @@
                 calcGrandTotalEdit();
             };
 
-            // 3. Các hàm tính toán giữ nguyên nhưng đảm bảo gọi đúng tên
             window.updateRowPrice = function(select) {
                 var option = $(select).find(':selected');
                 var price = parseFloat(option.data('price')) || 0;
@@ -186,7 +226,7 @@
             };
 
         } else {
-            setTimeout(initEditScript, 50);
+            setTimeout(initEditScript, 100);
         }
     })();
 </script>

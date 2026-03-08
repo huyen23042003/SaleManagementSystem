@@ -1,33 +1,89 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Trang chủ - Quản lý bán hàng";
 }
 
+<style>
+    .home-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+        .home-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+    .card-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 60px 0;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 50px;
+    }
+</style>
+
 <main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold">BÀI TẬP WEB</h1>
+            <p class="lead">Hệ thống quản lý doanh thu cửa hàng</p>
+           
+        </div>
     </section>
 
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="card home-card h-100 text-center shadow-sm">
+                    <div class="card-body py-5">
+                        <div class="card-icon text-primary">📦</div>
+                        <h3 class="card-title fw-bold">SẢN PHẨM</h3>
+                        <p class="card-text text-muted">Quản lý mã sản phẩm, tên và giá bán đơn hàng.</p>
+                        <a href="@Url.Action("Index", "Product")" class="btn btn-primary px-4 rounded-pill mt-3">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card home-card h-100 text-center shadow-sm">
+                    <div class="card-body py-5">
+                        <div class="card-icon text-success">👥</div>
+                        <h3 class="card-title fw-bold">KHÁCH HÀNG</h3>
+                        <p class="card-text text-muted">Thông tin khách hàng và số điện thoại liên lạc.</p>
+                        <a href="@Url.Action("Index", "Customer")" class="btn btn-success px-4 rounded-pill mt-3">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card home-card h-100 text-center shadow-sm border-warning">
+                    <div class="card-body py-5">
+                        <div class="card-icon text-warning">📄</div>
+                        <h3 class="card-title fw-bold">HÓA ĐƠN</h3>
+                        <p class="card-text text-muted">Lập hóa đơn Master-Detail, tính toán doanh thu.</p>
+                        <a href="@Url.Action("Index", "Invoice")" class="btn btn-warning text-dark fw-bold px-4 rounded-pill mt-3">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="alert alert-info border-0 shadow-sm rounded-4 p-4">
+                    <h5 class="fw-bold"><i class="bi bi-info-circle"></i> KẾT QUẢ ĐẦU RA</h5>
+                    <ul class="mb-0">
+                        <li>Link GitHub Source Code: <span class="text-muted italic"><a>https://github.com/huyen23042003/SaleManagementSystem</a></span></li>
+                        <li>Video Demo: Đạt đầy đủ các checklist yêu cầu của bài tập.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
