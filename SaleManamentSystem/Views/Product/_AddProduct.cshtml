@@ -2,15 +2,16 @@
 
 <div class="modal-header bg-primary text-white">
     <h5 class="modal-title">THÊM MỚI SẢN PHẨM</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 
 @using (Html.BeginForm("AddProduct", "Product", FormMethod.Post, new { id = "addForm", onsubmit = "return false;" }))
 {
     <div class="modal-body">
+
         <div class="mb-3">
             <label class="fw-bold">Mã sản phẩm</label>
-            @Html.TextBoxFor(m => m.ProductID, new { @class = "form-control",id = "ProductID", placeholder = "VD: SP001" })
+            @Html.TextBoxFor(m => m.ProductID, new { @class = "form-control", id = "ProductID", placeholder = "VD: SP001" })
             <span class="text-danger small fw-bold" style="display:none;"></span>
             @Html.ValidationMessageFor(m => m.ProductID, "", new { @class = "text-danger small" })
         </div>
@@ -23,10 +24,21 @@
 
         <div class="mb-3">
             <label class="fw-bold">Giá bán</label>
-            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number" })
+
+            <!-- input hiển thị -->
+            <input type="text"
+                   id="priceDisplay"
+                   class="form-control"
+                   placeholder="0" />
+
+            <!-- input gửi server -->
+            @Html.HiddenFor(m => m.Price, new { id = "priceValue" })
+
             @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger" })
         </div>
+
     </div>
+
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
 
@@ -36,16 +48,48 @@
     </div>
 }
 
-
-
 <script>
     (function () {
+
+        // ===== FORMAT TIỀN =====
+        function formatMoney(value) {
+
+            value = value.replace(/,/g, '');
+
+            if (value === "") return "";
+
+            return parseInt(value).toLocaleString("en-US");
+        }
+
+        $("#priceDisplay").on("input", function () {
+
+            var raw = $(this).val().replace(/,/g, '');
+
+            if (raw === "") {
+                $("#priceValue").val("");
+                return;
+            }
+
+            if (!isNaN(raw)) {
+
+                $(this).val(formatMoney(raw));
+
+                $("#priceValue").val(raw);
+            }
+
+        });
+
+
+        // ===== PRODUCT ID AUTO FORMAT =====
         $(document).on('input', '#ProductID', function () {
             var val = $(this).val().replace(/\s/g, '').toUpperCase();
             $(this).val(val);
         });
 
+
+        // ===== CHECK TRÙNG MÃ =====
         $(document).on('blur', '#ProductID', function () {
+
             var productID = $(this).val().trim();
             var $input = $(this);
             var $errorSpan = $input.nextAll('.text-danger').first();
@@ -53,23 +97,38 @@
             if (productID === "") return;
 
             $.get('/Product/CheckExistingProduct', { productID: productID }, function (exists) {
+
                 if (exists) {
+
                     $input.addClass('is-invalid');
                     $errorSpan.text("Mã sản phẩm này đã tồn tại!").show();
+
                     $('.btn-primary, .btn-info').prop('disabled', true);
+
                 } else {
+
                     $input.removeClass('is-invalid').addClass('is-valid');
                     $errorSpan.text("").hide();
-                    $('.btn-primary, .btn-info').prop('disabled', false);
-                }
-            });
-        });
-        $(document).ready(function () {
-            $('#actionModal').on('hidden.bs.modal', function () {
-                location.reload();
-            });
-        });
-    })(); 
 
-    
+                    $('.btn-primary, .btn-info').prop('disabled', false);
+
+                }
+
+            });
+
+        });
+
+
+        // ===== RELOAD SAU KHI ĐÓNG MODAL =====
+        $(document).ready(function () {
+
+            $('#actionModal').on('hidden.bs.modal', function () {
+
+                location.reload();
+
+            });
+
+        });
+
+    })();
 </script>

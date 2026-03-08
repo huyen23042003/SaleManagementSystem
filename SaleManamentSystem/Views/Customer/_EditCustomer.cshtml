@@ -5,7 +5,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 
-@using (Html.BeginForm("EditCustomer", "Customer", FormMethod.Post))
+@using (Html.BeginForm("EditCustomer", "Customer", FormMethod.Post, new { id = "editForm" }))
 {
     <div class="modal-body">
         <div class="form-group mb-3">
@@ -30,3 +30,10 @@
         <button type="submit" class="btn btn-warning text-dark fw-bold">Lưu thay đổi</button>
     </div>
 }
+
+
+<script>
+    $(document).ready(function () {
+        $.validator.unobtrusive.parse("#editForm");
+    });
+</script>

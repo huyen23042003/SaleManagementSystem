@@ -20,7 +20,7 @@
             </div>
             <div class="col-md-6 mb-3 text-end">
                 <label class="fw-bold d-block">Ngày lập</label>
-                <span class="badge bg-light text-dark border">@Model.InvoiceDate.ToString("dd/MM/yyyy HH:mm")</span>
+                <span class="badge bg-light text-dark border">@Model.InvoiceDate.ToString("dd/MM/yyyy")</span>
             </div>
         </div>
 
@@ -64,7 +64,7 @@
                                 @Html.HiddenFor(m => m.InvoiceDetails[i].TotalPrice, new { @class = "row-total-value" })
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-link text-danger p-0" onclick="$(this).closest('tr').remove(); calcGrandTotalEdit();">X</button>
+                                <button type="button" class="btn btn-link text-danger p-0" onclick="removeRow(this)">X</button>
                             </td>
                         </tr>
                     }
@@ -89,6 +89,7 @@
         if (window.jQuery) {
             var productData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Products));
 
+            // 1. Hàm thêm dòng mới
             window.addNewRowEdit = function() {
                 var index = $("#editDetailTable tbody tr").length;
                 var options = `<option value="">-- Chọn --</option>`;
@@ -110,27 +111,42 @@
                         <input type="hidden" name="InvoiceDetails[${index}].TotalPrice" class="row-total-value" value="0" />
                     </td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-link text-danger p-0" onclick="$(this).closest('tr').removeRow(); calcGrandTotalEdit();">X</button>
+                        <button type="button" class="btn btn-link text-danger p-0" onclick="removeRow(this)">X</button>
                     </td>
                 </tr>`;
                 $("#editDetailTable tbody").append(row);
             };
 
-            window.updateRowPrice = function(select) {
-                var option = $(select).find(':selected');
-                var price = 0;
+            // 2. Hàm XÓA DÒNG (Đã thêm logic chặn dòng cuối)
+            window.removeRow = function (btn) {
+                var rowCount = $("#editDetailTable tbody tr").length;
 
-                if (option.data('price')) {
-                    price = parseFloat(option.data('price'));
-                } else {
-                    var prodId = $(select).val();
-                    var prod = productData.find(p => p.ProductID == prodId);
-                    if (prod) price = prod.Price;
+                if (rowCount <= 1) {
+                    alert("Hóa đơn phải có ít nhất 1 mặt hàng!");
+                    return;
                 }
 
+                $(btn).closest('tr').remove();
+
+                // Đánh lại số thứ tự index để gửi form chính xác
+                $("#editDetailTable tbody tr").each(function (index, tr) {
+                    $(tr).find('select, input').each(function () {
+                        var name = $(this).attr('name');
+                        if (name) {
+                            var newName = name.replace(/\[\d+\]/, '[' + index + ']');
+                            $(this).attr('name', newName);
+                        }
+                    });
+                });
+                calcGrandTotalEdit();
+            };
+
+            // 3. Các hàm tính toán giữ nguyên nhưng đảm bảo gọi đúng tên
+            window.updateRowPrice = function(select) {
+                var option = $(select).find(':selected');
+                var price = parseFloat(option.data('price')) || 0;
                 var row = $(select).closest('tr');
-                row.find('.unit-price').val(new Intl.NumberFormat().format(price));
-                row.find('.unit-price').data('raw', price);
+                row.find('.unit-price').val(new Intl.NumberFormat().format(price)).data('raw', price);
                 calcRow(select);
             };
 
@@ -152,6 +168,7 @@
                 $("#spanTotalEdit").text(new Intl.NumberFormat().format(grandTotal));
                 $("#hdTotalPriceEdit").val(grandTotal);
             };
+
             window.submitEditInvoice = function () {
                 var form = $('#editInvoiceForm');
                 $.ajax({
@@ -164,24 +181,8 @@
                         } else {
                             $('.modal-content').html(response);
                         }
-                    },
-                    error: function () {
-                        alert("Có lỗi xảy ra khi gửi dữ liệu!");
                     }
                 });
-            };
-            window.removeRow = function (btn) {
-                $(btn).closest('tr').remove();
-                $("#editDetailTable tbody tr").each(function (index, tr) {
-                    $(tr).find('select, input').each(function () {
-                        var name = $(this).attr('name');
-                        if (name) {
-                            var newName = name.replace(/\[\d+\]/, '[' + index + ']');
-                            $(this).attr('name', newName);
-                        }
-                    });
-                });
-                calcGrandTotalEdit();
             };
 
         } else {

@@ -2,15 +2,20 @@
 
 <div class="modal-header bg-warning text-dark">
     <h5 class="modal-title fw-bold">CẬP NHẬT SẢN PHẨM</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 
-@using (Html.BeginForm("EditProduct", "Product", FormMethod.Post))
+@using (Html.BeginForm("EditProduct", "Product", FormMethod.Post, new { id = "editForm" }))
 {
     <div class="modal-body">
+
         <div class="form-group mb-3">
             <label class="fw-bold">Mã sản phẩm</label>
-            @Html.TextBoxFor(m => m.ProductID, new { @class = "form-control bg-light", @readonly = "readonly" })
+            @Html.TextBoxFor(m => m.ProductID, new
+            {
+                @class = "form-control bg-light",
+                @readonly = "readonly"
+            })
         </div>
 
         <div class="form-group mb-3">
@@ -21,12 +26,75 @@
 
         <div class="form-group mb-3">
             <label class="fw-bold">Giá bán</label>
-            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number" })
+
+            <!-- input hiển thị -->
+            <input type="text"
+                   id="priceDisplay"
+                   class="form-control"
+                   value="@Model.Price.ToString("N0")" />
+
+            <!-- input gửi server -->
+            @Html.HiddenFor(m => m.Price, new { id = "priceValue" })
+
             @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger" })
         </div>
+
     </div>
+
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Thoát</button>
-        <button type="submit" class="btn btn-warning text-dark fw-bold">Lưu thay đổi</button>
+        <button type="submit" class="btn btn-warning fw-bold text-dark">Lưu thay đổi</button>
     </div>
 }
+
+<script>
+
+    $(document).ready(function () {
+
+        $.validator.unobtrusive.parse("#editForm");
+
+        function formatMoney(value) {
+
+            value = value.replace(/,/g, '');
+
+            if (value === "") return "";
+
+            return parseInt(value).toLocaleString("en-US");
+
+        }
+
+        // format khi nhập
+        $("#priceDisplay").on("input", function () {
+
+            var raw = $(this).val().replace(/,/g, '');
+
+            if (raw === "") {
+
+                $("#priceValue").val("");
+
+                return;
+
+            }
+
+            if (!isNaN(raw)) {
+
+                $(this).val(formatMoney(raw));
+
+                $("#priceValue").val(raw);
+
+            }
+
+        });
+
+        // submit chỉ gửi số
+        $("#editForm").on("submit", function () {
+
+            var raw = $("#priceDisplay").val().replace(/,/g, '');
+
+            $("#priceValue").val(raw);
+
+        });
+
+    });
+
+</script>
