@@ -138,12 +138,35 @@
         };
 
         window.updateRowPrice = function (select) {
-            var price = $(select).find(':selected').data('price') || 0;
-            var row = $(select).closest('tr');
-            row.find('.unit-price').val(new Intl.NumberFormat().format(price)).data('raw', price);
+            var $select = $(select);
+            var productId = $select.val();
+            var $currentRow = $select.closest('tr');
+
+            if (!productId) return;
+
+            var existingRow = null;
+            $("#detailTable tbody tr").each(function () {
+                var $row = $(this);
+                if ($row[0] !== $currentRow[0] && $row.find('.prod-select').val() == productId) {
+                    existingRow = $row;
+                }
+            });
+
+            if (existingRow) {
+                var $qtyInput = existingRow.find('.qty-input');
+                var currentQty = parseInt($qtyInput.val()) || 0;
+                $qtyInput.val(currentQty + 1);
+
+                $currentRow.remove();
+
+                window.calcTotal();
+                return; 
+            }
+
+            var price = $select.find(':selected').data('price') || 0;
+            $currentRow.find('.unit-price').val(new Intl.NumberFormat().format(price)).data('raw', price);
             window.calcTotal();
         };
-
         window.removeRow = function (btn) {
             var rowCount = $("#detailTable tbody tr").length;
 
