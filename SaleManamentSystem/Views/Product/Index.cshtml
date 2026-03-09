@@ -95,6 +95,7 @@
                         if (response.indexOf("window.location.reload()") !== -1) {
                             location.reload();
                         } else {
+                            alert("Lưu sản phẩm thành công! Bạn có thể tiếp tục nhập sản phẩm mới.");
                             $('#modalBodyContent').html(response);
 
                             var newForm = $('#addForm');

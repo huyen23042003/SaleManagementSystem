@@ -94,6 +94,7 @@
                         if (response.indexOf("window.location.reload()") !== -1) {
                             location.reload();
                         } else {
+                            alert("Lưu khách hàng thành công! Bạn có thể tiếp tục nhập khách hàng mới.");
                             $('#modalBodyContent').html(response);
 
                             var newForm = $('#addForm');

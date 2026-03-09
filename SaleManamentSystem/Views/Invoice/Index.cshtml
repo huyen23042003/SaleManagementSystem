@@ -75,6 +75,17 @@
             $.get(url, function (data) {
                 $('#modalBodyContent').html(data);
                 $('#actionModal').modal('show');
+
+                $('#actionModal').on('shown.bs.modal', function () {
+                    if (typeof initSelect2 === "function") {
+                        initSelect2();
+                    } else {
+                        $('.select2-customer').select2({
+                            dropdownParent: $('#actionModal'),
+                            width: '100%'
+                        });
+                    }
+                });
             });
         }
 
@@ -122,6 +133,9 @@
                     if (res.indexOf("window.location.reload()") > -1) {
                         location.reload();
                     } else {
+
+                        alert("Lưu hóa đơn thành công! Bạn có thể tiếp tục nhập hóa đơn mới.");
+
                         $('#modalBodyContent').html(res);
                         isAdded = true;
                         $('.modal-body').animate({ scrollTop: 0 }, 'fast');
