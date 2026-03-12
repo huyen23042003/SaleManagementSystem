@@ -175,7 +175,7 @@
             }
 
             var price = $select.find(':selected').data('price') || 0;
-            $currentRow.find('.unit-price').val(new Intl.NumberFormat().format(price)).data('raw', price);
+            $currentRow.find('.unit-price').val(new Intl.NumberFormat('vi-VN').format(price)).data('raw', price);
             window.calcTotal();
         };
         window.removeRow = function (btn) {

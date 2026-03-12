@@ -20,7 +20,7 @@ namespace SaleManamentSystem.Controllers
         [HttpGet]
         public ActionResult AddProduct()
         {
-            return PartialView("_AddProduct");
+            return PartialView("_AddProduct", new ProductEntity());
         }
 
         [HttpPost]
